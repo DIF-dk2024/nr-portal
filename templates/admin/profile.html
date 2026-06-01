@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='logo.jpeg') }}">
+  <title>Профиль агента — Admin</title>
+  <style>
+    :root{--bg:#000;--card:#0b0b0b;--card2:#111;--text:#fff;--muted:#bdbdbd;--border:#222;--accent:#FF9F0A;}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
+    .wrap{max-width:980px;margin:0 auto;padding:22px 14px 60px;}
+    a{color:var(--accent);text-decoration:none}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap;}
+    .btn{border:1px solid var(--border);background:#111;color:#fff;border-radius:14px;padding:10px 12px;font-weight:800;cursor:pointer;display:inline-block;}
+    .btn.accent{background:var(--accent);color:#000;border-color:transparent;}
+    .danger{border-color:#402;background:#120;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:14px;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    @media(max-width:720px){.grid{grid-template-columns:1fr}}
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;}
+    input,textarea{width:100%;padding:12px;border-radius:14px;border:1px solid var(--border);background:var(--card2);color:var(--text);outline:none;font-size:14px;}
+    textarea{min-height:130px;resize:vertical;}
+    .row{margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .flash{background:#140d00;border:1px solid rgba(255,159,10,.35);color:#ffd9a1;padding:10px 12px;border-radius:14px;margin:10px 0 0;font-size:13px;}
+    .hint{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.35;}
+    .preview{display:flex;gap:14px;align-items:center;margin-bottom:14px;}
+    .avatar{width:112px;height:112px;border-radius:20px;overflow:hidden;border:1px solid var(--border);background:#050505;flex:0 0 auto;}
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+    .muted{color:var(--muted);font-size:12px;}
+    code{background:#111;border:1px solid #222;padding:2px 6px;border-radius:8px;color:#fff}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <a href="/admin">← назад</a>
+        <div style="height:6px"></div>
+        <h1 style="margin:0;">Профиль агента</h1>
+        <div class="muted">Этот блок появится между “Портал Агента” и “Мои Предложения”.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a class="btn" href="/">На сайт</a>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}<div class="flash">{{ messages[0] }}</div>{% endif %}
+    {% endwith %}
+
+    <div class="card">
+      <div class="preview">
+        <div class="avatar">
+          {% if profile.photo %}
+            <img src="{{ url_for('uploads', sid='_agent_profile', filename=profile.photo) }}" alt="Фото агента">
+          {% else %}
+            <img src="/static/logo.jpeg" alt="Фото агента">
+          {% endif %}
+        </div>
+        <div>
+          <div style="font-weight:900;font-size:18px;">{{ profile.name or 'Имя агента пока не задано' }}</div>
+          <div class="muted">{{ profile.role or 'Должность / короткое описание' }}</div>
+          {% if profile.photo %}
+            <form class="row" method="post" action="/admin/profile/photo_delete" onsubmit="return confirm('Удалить фото профиля?')">
+              <button class="btn danger" type="submit">Удалить фото</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+
+      <form method="post" action="/admin/profile" enctype="multipart/form-data">
+        <div class="grid">
+          <div>
+            <label>Фото агента</label>
+            <input name="photo" type="file" accept="image/*">
+            <div class="hint">Если загрузить новое фото, старое будет заменено.</div>
+          </div>
+          <div>
+            <label>Имя / название агента</label>
+            <input name="name" value="{{ profile.name }}" placeholder="Например: Анна, агент по недвижимости">
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Короткая строка под именем</label>
+            <input name="role" value="{{ profile.role }}" placeholder="Например: Подбор квартир в Астане">
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Информация о себе</label>
+            <textarea name="bio" placeholder="Коротко: кто вы, чем помогаете, какой опыт, с какими объектами работаете">{{ profile.bio }}</textarea>
+          </div>
+          <div>
+            <label>Threads</label>
+            <input name="threads" value="{{ profile.threads }}" placeholder="@username или ссылка">
+          </div>
+          <div>
+            <label>Instagram</label>
+            <input name="instagram" value="{{ profile.instagram }}" placeholder="@username или ссылка">
+          </div>
+          <div>
+            <label>WhatsApp</label>
+            <input name="whatsapp" value="{{ profile.whatsapp }}" placeholder="+77001234567 или ссылка">
+          </div>
+          <div>
+            <label>Telegram</label>
+            <input name="telegram" value="{{ profile.telegram }}" placeholder="@username или ссылка">
+          </div>
+          <div>
+            <label>Сайт / другая основная ссылка</label>
+            <input name="website" value="{{ profile.website }}" placeholder="https://...">
+          </div>
+          <div>
+            <label>Название дополнительной ссылки</label>
+            <input name="extra_label" value="{{ profile.extra_label }}" placeholder="Например: YouTube, TikTok, LinkedIn">
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Дополнительная ссылка</label>
+            <input name="extra_url" value="{{ profile.extra_url }}" placeholder="https://...">
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn accent" type="submit">Сохранить профиль</button>
+          <a class="btn" href="/admin">К списку</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

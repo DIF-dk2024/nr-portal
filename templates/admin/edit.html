@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='logo.jpeg') }}">
+  <title>Редактировать {{ sid }}</title>
+  <style>
+    :root{--bg:#000;--card:#0b0b0b;--card2:#111;--text:#fff;--muted:#bdbdbd;--border:#222;--accent:#FF9F0A;}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
+    .wrap{max-width:980px;margin:0 auto;padding:22px 14px 60px;}
+    a{color:var(--accent);text-decoration:none}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap;}
+    .btn{border:1px solid var(--border);background:#111;color:#fff;border-radius:14px;padding:10px 12px;font-weight:800;cursor:pointer;text-decoration:none;}
+    .btn.accent{background:var(--accent);color:#000;border-color:transparent;}
+    .danger{border-color:#402;background:#120;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:14px;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    @media(max-width:720px){.grid{grid-template-columns:1fr}}
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;}
+    input,textarea{width:100%;padding:12px;border-radius:14px;border:1px solid var(--border);background:var(--card2);color:var(--text);outline:none;font-size:14px;}
+    textarea{min-height:110px;resize:vertical}
+    .row{margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .flash{background:#140d00;border:1px solid rgba(255,159,10,.35);color:#ffd9a1;padding:10px 12px;border-radius:14px;margin:10px 0 0;font-size:13px;}
+    .comments{margin-top:16px;}
+    .comment{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px;margin-bottom:10px;}
+    .comment-head{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:12px;margin-bottom:6px;flex-wrap:wrap;}
+    .comment-contact{color:#fff;font-weight:900;word-break:break-word;}
+    .comment-message{font-size:13px;line-height:1.35;white-space:pre-wrap;word-break:break-word;}
+    .comment-actions{margin-top:10px;}
+    .comment-actions button{border:1px solid #402;background:#120;color:#fff;border-radius:12px;padding:8px 10px;font-weight:800;cursor:pointer;font-size:12px;}
+    code{background:#111;border:1px solid #222;padding:2px 6px;border-radius:8px;color:#fff}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <a href="/admin">← назад</a>
+        <div style="height:6px"></div>
+        <div style="color:var(--muted);font-size:12px;">ID: <code>{{ sid }}</code></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <form method="post" action="/admin/delete/{{ sid }}" onsubmit="return confirm('Удалить заявку {{ sid }}?')">
+          <button class="btn danger" type="submit">Удалить</button>
+        </form>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}<div class="flash">{{ messages[0] }}</div>{% endif %}
+    {% endwith %}
+
+    <div class="card">
+      <form method="post" action="/admin/save/{{ sid }}">
+        <div class="grid">
+          <div style="grid-column:1/-1">
+            <label>Что хочет купить покупатель?</label>
+            <input name="title" value="{{ row.title }}">
+          </div>
+          <div>
+            <label>Бюджет, ₸</label>
+            <input name="price_tenge" value="{{ row.price_tenge }}">
+          </div>
+          <div>
+            <label>Контакт покупателя</label>
+            <input name="phone" value="{{ row.phone }}">
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Описание заявки</label>
+            <textarea name="description">{{ row.description }}</textarea>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn accent" type="submit">Сохранить</button>
+          <a class="btn" href="/admin">К списку</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="comments">
+      <h3 style="margin:16px 0 10px;">Предложения Агента{% if comments and comments|length %} · {{ comments|length }}{% endif %}</h3>
+      {% if comments and comments|length %}
+        {% for c in comments %}
+          <div class="comment">
+            <div class="comment-head">
+              <span class="comment-contact">{{ c.contact }}</span>
+              <span>{{ c.created_utc }} · ID: <code>{{ c.id }}</code></span>
+            </div>
+            <div class="comment-message">{{ c.message }}</div>
+            <div class="comment-actions">
+              <form method="post" action="/admin/comment_delete/{{ c.id }}" onsubmit="return confirm('Удалить предложение агента?')">
+                <button type="submit">Удалить предложение</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="card" style="color:var(--muted);font-size:12px;">Предложений агентов пока нет.</div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

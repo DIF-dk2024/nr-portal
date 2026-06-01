@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='logo.jpeg') }}">
+  <title>Admin — Портал Покупателей</title>
+  <style>
+    :root{--bg:#000;--card:#0b0b0b;--card2:#111;--text:#fff;--muted:#bdbdbd;--border:#222;--accent:#FF9F0A;--buyer:#1c1c1c;}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
+    .wrap{max-width:980px;margin:0 auto;padding:22px 14px 60px;}
+    a{color:var(--accent);text-decoration:none}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+    .btn{border:1px solid var(--border);background:#111;color:#fff;border-radius:14px;padding:10px 12px;font-weight:800;cursor:pointer;display:inline-block;}
+    .btn.accent{background:var(--accent);color:#000;border-color:transparent;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:14px;}
+
+    .cards{display:grid;grid-template-columns: repeat(2, minmax(0, 1fr));gap:12px;}
+    @media(max-width:720px){.cards{grid-template-columns:1fr;}}
+
+    .item{display:flex;gap:12px;align-items:stretch;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:12px;}
+    .item.buyer{background:var(--buyer);border-color:#2d2d2d;}
+    .thumb{width:90px;flex:0 0 90px;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:#0e0e0e;}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+    .meta{flex:1;min-width:0;}
+    .row1{display:flex;justify-content:space-between;gap:10px;}
+    .price{font-weight:900;}
+    .small{color:var(--muted);font-size:12px;}
+    .title{margin-top:6px;word-break:break-word;}
+    .badges{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;}
+    .badge{font-size:12px;color:#fff;border:1px solid var(--border);background:#111;padding:6px 10px;border-radius:999px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1 style="margin:0;">Admin</h1>
+        <div class="small">Numerical Research</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a class="btn accent" href="/admin/new">Новая заявка</a>
+        <a class="btn" href="/">На сайт</a>
+        <a class="btn" href="/admin/csv">Скачать заявки CSV</a>
+        <a class="btn" href="/admin/comments_csv">Скачать предложения CSV</a>
+        <a class="btn" href="/admin/logout">Выйти</a>
+      </div>
+    </div>
+
+    {% if submissions and submissions|length %}
+      <div class="cards">
+        {% for s in submissions %}
+          <div class="item">
+            <div class="thumb"><img src="{{ s.thumb_url }}" alt="{{ s.id }}"></div>
+            <div class="meta">
+              <div class="row1">
+                {% if s.price_tenge %}<div class="price">{{ s.price_tenge|format_price }}{% if s.price_tenge|is_numeric %} ₸{% endif %}</div>{% endif %}
+                <div class="small">{{ s.created_utc }}</div>
+              </div>
+              <div class="title">{{ s.title }}</div>
+              <div class="badges">
+                {% if s.comment_count %}<span class="badge">предложений: {{ s.comment_count }}</span>{% endif %}
+                <a class="badge" href="/admin/edit/{{ s.id }}">Редактировать</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card" style="color:var(--muted);">Пока нет заявок.</div>
+    {% endif %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='logo.jpeg') }}">
+  <title>Портал Покупателей — Заявки на покупку</title>
+  <style>
+    :root{
+      --bg:#000;
+      --card:#0b0b0b;
+      --card2:#111;
+      --text:#fff;
+      --muted:#bdbdbd;
+      --border:#222;
+      --accent:#FF9F0A;
+      --buyer:#1c1c1c;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
+    .wrap{max-width:980px;margin:0 auto;padding:22px 14px 60px;}
+    .top{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+    .logo{width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:var(--card);flex:0 0 auto;}
+    .logo img{width:100%;height:100%;object-fit:cover;display:block}
+    .title h1{font-size:20px;line-height:1.1;margin:0 0 4px}
+    .title p{margin:0;color:var(--muted);font-size:13px}
+    .title a{color:var(--accent);text-decoration:none}
+
+    .hero{background:linear-gradient(180deg, rgba(255,159,10,0.08), rgba(255,159,10,0.00));border:1px solid var(--border);border-radius:20px;padding:18px 16px;margin:14px 0 14px;}
+    .hero h2{margin:0 0 6px;font-size:20px}
+    .hero p{margin:0;color:var(--muted);font-size:14px;line-height:1.4}
+
+    .btnrow{display:flex;gap:10px;margin:12px 0 0;}
+    .btn{width:100%;border:1px solid var(--border);border-radius:18px;padding:14px 16px;font-weight:900;letter-spacing:0.04em;font-size:14px;cursor:pointer;background:#111;color:#fff;}
+    .btn.primary{background:var(--accent);color:#000;border-color:transparent;}
+
+    .form-card{margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;display:none;}
+    .form-card.show{display:block}
+    .grid{display:grid;grid-template-columns: 1fr 1fr;gap:12px;margin-top:12px;}
+    @media (max-width: 720px){.grid{grid-template-columns:1fr}}
+
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px;}
+    input, textarea{width:100%;padding:12px 12px;border-radius:14px;border:1px solid var(--border);background:var(--card2);color:var(--text);outline:none;font-size:14px;}
+    textarea{min-height:110px;resize:vertical}
+    .hint{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.35}
+    .row{margin-top:12px;display:flex;gap:10px;align-items:center;}
+    .row .btn2{flex:1;background:#111;color:#fff;border:1px solid var(--border);border-radius:16px;padding:12px 14px;font-weight:800;cursor:pointer;text-decoration:none;text-align:center;}
+    .row .btn2.primary{background:var(--accent);color:#000;border-color: transparent;}
+    .flash{background:#140d00;border:1px solid rgba(255,159,10,0.35);color:#ffd9a1;padding:10px 12px;border-radius:14px;margin:10px 0 0;font-size:13px;}
+
+    .listings{margin-top:18px;}
+    .cards{display:grid;grid-template-columns: repeat(2, minmax(0, 1fr));gap:12px;}
+    @media(max-width:720px){.cards{grid-template-columns:1fr;}}
+
+    .card-item{display:block;background:var(--buyer);border:1px solid #2d2d2d;border-radius:20px;padding:14px;cursor:pointer;overflow:hidden;min-height:176px;}
+    .card-item.open{height:auto;overflow:visible;}
+    .meta2{min-width:0;}
+    .row1{display:flex;gap:10px;align-items:baseline;justify-content:space-between;}
+    .price{font-weight:900;font-size:16px;}
+    .small{color:var(--muted);font-size:12px;}
+    .addr{margin-top:6px;font-size:15px;line-height:1.25;color:#fff;opacity:.95;word-break:break-word;font-weight:850;}
+    .badges{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;}
+    .badge{font-size:12px;color:#fff;border:1px solid var(--border);background:#111;padding:6px 10px;border-radius:999px;}
+    .details{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+    .card-item.open .details{display:block;}
+    .detail-block{margin-top:10px;}
+    .detail-label{color:var(--muted);font-size:12px;margin-bottom:6px;}
+    .detail-text{font-size:13px;line-height:1.35;word-break:break-word;white-space:pre-wrap;}
+
+    .comments{margin-top:14px;border-top:1px solid var(--border);padding-top:12px;}
+    .comment-title{font-size:13px;font-weight:900;margin:0 0 10px;}
+    .comment-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+    .comment{background:#080808;border:1px solid var(--border);border-radius:14px;padding:10px;}
+    .comment-head{display:flex;gap:8px;justify-content:space-between;align-items:baseline;color:var(--muted);font-size:11px;margin-bottom:6px;flex-wrap:wrap;}
+    .comment-contact{color:#fff;font-weight:800;word-break:break-word;}
+    .comment-message{font-size:13px;line-height:1.35;white-space:pre-wrap;word-break:break-word;}
+    .comment-form{background:#080808;border:1px solid var(--border);border-radius:16px;padding:10px;}
+    .comment-form textarea{min-height:78px;}
+    .comment-form-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+    .comment-submit{border:0;border-radius:14px;padding:11px 12px;font-weight:900;background:var(--accent);color:#000;cursor:pointer;width:100%;}
+    .idtag{margin-top:10px;color:var(--muted);font-size:12px;}
+    .meta{margin-top:14px;color:var(--muted);font-size:12px;opacity:0.75;}
+    code{background:#111;border:1px solid #222;padding:2px 6px;border-radius:8px;color:#fff}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="logo"><img src="/static/logo.jpeg" alt="Портал Покупателей" /></div>
+      <div class="title">
+        <h1>Портал Покупателей</h1>
+        <p>написать <a href="https://t.me/numresearch" target="_blank" rel="noreferrer">NR</a></p>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h2>Заявки на покупку</h2>
+      <p>Покупатель оставляет заявку. Агенты могут открыть карточку и отправить своё предложение.</p>
+      <div class="btnrow">
+        <button class="btn primary" type="button" id="showBuyForm">Хочу Купить</button>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">{{ messages[0] }}</div>
+      {% endif %}
+    {% endwith %}
+
+    <section id="buy-form" class="form-card" aria-label="Создать заявку на покупку">
+      <form method="post" action="/submit">
+        <div class="grid">
+          <div style="grid-column:1/-1">
+            <label>Что хотите купить? *</label>
+            <input name="title" maxlength="240" required placeholder="Например: 2-комнатная квартира в Есиле" />
+          </div>
+          <div>
+            <label>Бюджет, ₸</label>
+            <input name="price" maxlength="80" placeholder="например: до 35 000 000" />
+          </div>
+          <div>
+            <label>Контакт покупателя *</label>
+            <input name="phone" maxlength="160" required placeholder="Telegram, WhatsApp, email или телефон" />
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Описание заявки *</label>
+            <textarea name="description" maxlength="3000" required placeholder="Район, комнаты, метраж, этаж, сроки, ипотека/наличные, важные пожелания"></textarea>
+            <div class="hint">Файлы и фото к заявке не загружаются — только текстовая заявка.</div>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn2 primary" type="submit">Создать заявку</button>
+          <button class="btn2" type="button" id="hideBuyForm">Отмена</button>
+        </div>
+      </form>
+    </section>
+
+    <div class="listings">
+      {% if submissions and submissions|length %}
+        <div class="cards">
+          {% for s in submissions %}
+            <div id="card-{{ s.id }}" class="card-item" role="button" tabindex="0" aria-expanded="false">
+              <div class="meta2">
+                <div class="row1">
+                  {% if s.price_tenge %}<div class="price">{{ s.price_tenge|format_price }}{% if s.price_tenge|is_numeric %} ₸{% endif %}</div>{% endif %}
+                  <div class="small">{{ s.created_utc }}</div>
+                </div>
+
+                <div class="addr">{{ s.title }}</div>
+
+                <div class="badges">
+                  {% if s.phone %}<span class="badge">контакт указан</span>{% endif %}
+                  {% if s.comment_count %}<span class="badge">предложений: {{ s.comment_count }}</span>{% else %}<span class="badge">новая заявка</span>{% endif %}
+                </div>
+
+                <div class="details">
+                  {% if s.description %}
+                    <div class="detail-block">
+                      <div class="detail-label">Описание заявки</div>
+                      <div class="detail-text">{{ s.description }}</div>
+                    </div>
+                  {% endif %}
+
+                  {% if s.phone %}
+                    <div class="detail-block">
+                      <div class="detail-label">Контакт покупателя</div>
+                      <div class="detail-text">{{ s.phone }}</div>
+                    </div>
+                  {% endif %}
+
+                  <div class="detail-block">
+                    <div class="detail-label">ID заявки</div>
+                    <div class="detail-text">{{ s.id }}</div>
+                  </div>
+
+                  <div class="comments">
+                    <div class="comment-title">Предложения Агента{% if s.comment_count %} · {{ s.comment_count }}{% endif %}</div>
+
+                    {% if s.comments and s.comments|length %}
+                      <div class="comment-list">
+                        {% for c in s.comments %}
+                          <div class="comment">
+                            <div class="comment-head">
+                              <span class="comment-contact">{{ c.contact }}</span>
+                              <span>{{ c.created_utc }}</span>
+                            </div>
+                            <div class="comment-message">{{ c.message }}</div>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    {% else %}
+                      <div class="small" style="margin-bottom:10px;">Пока нет предложений агентов.</div>
+                    {% endif %}
+
+                    <form class="comment-form" method="post" action="/comment/{{ s.id }}" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()">
+                      <div class="comment-form-grid">
+                        <div>
+                          <label>Мой контакт *</label>
+                          <input name="contact" maxlength="120" required placeholder="Telegram, WhatsApp, email или телефон" onkeydown="event.stopPropagation()">
+                        </div>
+                        <div>
+                          <label>Мой Пароль *</label>
+                          <input name="offer_password" maxlength="120" required value="Free" onkeydown="event.stopPropagation()">
+                          <div class="hint">Если секретное слово изменено на бэкенде, замените Free на актуальное слово.</div>
+                        </div>
+                        <div>
+                          <label>Предложение Агента *</label>
+                          <textarea name="message" maxlength="2000" required placeholder="Напишите предложение по этой заявке" onkeydown="event.stopPropagation()"></textarea>
+                        </div>
+                        <button class="comment-submit" type="submit">Отправить предложение агента</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+
+                <div class="idtag">Нажми, чтобы раскрыть</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="small">Пока нет заявок на покупку.</div>
+      {% endif %}
+    </div>
+    <div class="meta">Numerical Research</div>
+  </div>
+  <script>
+    const buyForm = document.getElementById('buy-form');
+    const showBuyForm = document.getElementById('showBuyForm');
+    const hideBuyForm = document.getElementById('hideBuyForm');
+
+    if (showBuyForm && buyForm) {
+      showBuyForm.addEventListener('click', () => {
+        buyForm.classList.add('show');
+        window.location.hash = 'buy-form';
+      });
+    }
+    if (hideBuyForm && buyForm) {
+      hideBuyForm.addEventListener('click', () => {
+        buyForm.classList.remove('show');
+        if (window.location.hash === '#buy-form') {
+          history.replaceState(null, '', window.location.pathname);
+        }
+      });
+    }
+    if (window.location.hash === '#buy-form' && buyForm) {
+      buyForm.classList.add('show');
+    }
+
+    function toggleCard(el){
+      const isOpen = el.classList.toggle('open');
+      el.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    const hashCard = window.location.hash ? document.querySelector(window.location.hash) : null;
+    if (hashCard && hashCard.classList.contains('card-item')) {
+      hashCard.classList.add('open');
+      hashCard.setAttribute('aria-expanded', 'true');
+    }
+
+    document.querySelectorAll('.card-item').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target && (e.target.tagName === 'A' || e.target.closest('a'))) return;
+        if (e.target && e.target.closest('input, textarea, select, button, label, form')) return;
+        toggleCard(card);
+      });
+
+      card.addEventListener('keydown', (e) => {
+        if (e.target && e.target.closest('input, textarea, select, button')) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleCard(card);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
