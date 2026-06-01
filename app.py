@@ -718,9 +718,6 @@ def submit():
     if not title:
         flash("Напишите, что вы хотите купить.")
         return redirect(url_for("index") + "#buy-form")
-    if not phone:
-        flash("Укажите контакт покупателя.")
-        return redirect(url_for("index") + "#buy-form")
     if not description:
         flash("Добавьте описание заявки.")
         return redirect(url_for("index") + "#buy-form")
@@ -846,7 +843,7 @@ def health():
 # Admin
 # ----------------------------
 
-ADMIN_KEY = os.environ.get("ADMIN_KEY", "").strip()
+ADMIN_KEY = (os.environ.get("ADMIN_KEY") or os.environ.get("ADMIN_PASSWORD") or "").strip()
 
 
 def _is_admin() -> bool:
@@ -911,7 +908,7 @@ def admin_login():
 def admin_login_post():
     key = (request.form.get("key") or "").strip()
     if not ADMIN_KEY:
-        flash("ADMIN_KEY не задан в Render Environment.")
+        flash("ADMIN_KEY или ADMIN_PASSWORD не задан в Render Environment.")
         return redirect(url_for("admin_login"))
     if hmac.compare_digest(key, ADMIN_KEY):
         session["admin_key"] = key
@@ -1098,6 +1095,36 @@ def admin_photo_delete(sid: str, filename: str):
 def admin_upload(sid: str):
     # Загрузку файлов в карточки отключили: заявки теперь только текстовые.
     abort(404)
+
+
+@app.post("/admin/comment_save/<cid>")
+@admin_required
+def admin_comment_save(cid: str):
+    rows = _read_all_comments()
+    target = None
+    for c in rows:
+        if (c.get("id") or "").strip() == cid:
+            target = c
+            break
+
+    if not target:
+        abort(404)
+
+    contact = (request.form.get("contact") or "").strip()
+    message = (request.form.get("message") or "").strip()
+
+    if not contact:
+        flash("Контакт в предложении агента не может быть пустым.")
+        return redirect(f"/admin/edit/{target.get('card_id')}")
+    if not message:
+        flash("Текст предложения агента не может быть пустым.")
+        return redirect(f"/admin/edit/{target.get('card_id')}")
+
+    target["contact"] = contact[:COMMENT_CONTACT_MAX]
+    target["message"] = message[:COMMENT_MESSAGE_MAX]
+    _write_all_comments(rows)
+    flash("Предложение агента сохранено.")
+    return redirect(f"/admin/edit/{target.get('card_id')}")
 
 
 @app.post("/admin/comment_delete/<cid>")

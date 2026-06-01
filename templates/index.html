@@ -109,7 +109,7 @@
     {% endwith %}
 
     <section id="buy-form" class="form-card" aria-label="Создать заявку на покупку">
-      <form method="post" action="/submit">
+      <form id="buyRequestForm" method="post" action="/submit" novalidate>
         <div class="grid">
           <div style="grid-column:1/-1">
             <label>Что хотите купить? *</label>
@@ -120,8 +120,8 @@
             <input name="price" maxlength="80" placeholder="например: до 35 000 000" />
           </div>
           <div>
-            <label>Контакт покупателя *</label>
-            <input name="phone" maxlength="160" required placeholder="Telegram, WhatsApp, email или телефон" />
+            <label>Контакт покупателя <span style="color:var(--muted);font-weight:400;">(по желанию)</span></label>
+            <input name="phone" maxlength="160" placeholder="по желанию: Telegram, WhatsApp, email или телефон" autocomplete="off" />
           </div>
           <div style="grid-column:1/-1">
             <label>Описание заявки *</label>
@@ -144,7 +144,7 @@
               <div class="meta2">
                 <div class="row1">
                   {% if s.price_tenge %}<div class="price">{{ s.price_tenge|format_price }}{% if s.price_tenge|is_numeric %} ₸{% endif %}</div>{% endif %}
-                  <div class="small">{{ s.created_utc }}</div>
+                  <div class="small">ID: {{ s.id }}</div>
                 </div>
 
                 <div class="addr">{{ s.title }}</div>
