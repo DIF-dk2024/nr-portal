@@ -31,8 +31,10 @@
     .hero p{margin:0;color:var(--muted);font-size:14px;line-height:1.4}
 
     .btnrow{display:flex;gap:10px;margin:12px 0 0;}
-    .btn{width:100%;border:1px solid var(--border);border-radius:18px;padding:14px 16px;font-weight:900;letter-spacing:0.04em;font-size:14px;cursor:pointer;background:#111;color:#fff;}
+    .btn{flex:1;width:100%;border:1px solid var(--border);border-radius:18px;padding:14px 16px;font-weight:900;letter-spacing:0.04em;font-size:14px;cursor:pointer;background:#111;color:#fff;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;}
     .btn.primary{background:var(--accent);color:#000;border-color:transparent;}
+    .btn.secondary{background:#111;color:#fff;border-color:var(--border);}
+    @media(max-width:560px){.btnrow{grid-template-columns:1fr;flex-direction:column;}}
     .find-box{margin-top:12px;background:#080808;border:1px solid var(--border);border-radius:18px;padding:12px;}
     .find-title{font-size:12px;color:var(--muted);margin:0 0 8px;font-weight:800;}
     .find-form{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;}
@@ -109,6 +111,7 @@
       <p>Покупатель оставляет заявку. Агенты могут открыть карточку и отправить своё предложение.</p>
       <div class="btnrow">
         <button class="btn primary" type="button" id="showBuyForm">Хочу Купить</button>
+        <a class="btn secondary" href="https://nr-flat.onrender.com">Калькулятор</a>
       </div>
       <div class="find-box" aria-label="Найти заявку по ID">
         <div class="find-title">Найти заявку</div>
