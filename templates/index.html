@@ -33,6 +33,16 @@
     .btnrow{display:flex;gap:10px;margin:12px 0 0;}
     .btn{width:100%;border:1px solid var(--border);border-radius:18px;padding:14px 16px;font-weight:900;letter-spacing:0.04em;font-size:14px;cursor:pointer;background:#111;color:#fff;}
     .btn.primary{background:var(--accent);color:#000;border-color:transparent;}
+    .find-box{margin-top:12px;background:#080808;border:1px solid var(--border);border-radius:18px;padding:12px;}
+    .find-title{font-size:12px;color:var(--muted);margin:0 0 8px;font-weight:800;}
+    .find-form{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;}
+    .find-form input{width:100%;padding:12px;border-radius:14px;border:1px solid var(--border);background:var(--card2);color:var(--text);outline:none;font-size:14px;text-transform:uppercase;}
+    .find-form button{border:0;border-radius:14px;padding:12px 14px;font-weight:900;background:#fff;color:#000;cursor:pointer;white-space:nowrap;}
+    .find-note{margin-top:8px;color:var(--muted);font-size:12px;}
+    .find-note.ok{color:#ffd9a1;}
+    .find-note.bad{color:#ffb4a8;}
+    .card-item.highlighted{border-color:rgba(255,159,10,.9);box-shadow:0 0 0 1px rgba(255,159,10,.35), 0 0 28px rgba(255,159,10,.14);}
+    @media(max-width:560px){.find-form{grid-template-columns:1fr}.find-form button{width:100%;}}
 
     .form-card{margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;display:none;}
     .form-card.show{display:block}
@@ -100,6 +110,22 @@
       <div class="btnrow">
         <button class="btn primary" type="button" id="showBuyForm">Хочу Купить</button>
       </div>
+      <div class="find-box" aria-label="Найти заявку по ID">
+        <div class="find-title">Найти заявку</div>
+        <form class="find-form" method="get" action="/">
+          <input name="find_id" value="{{ find_id or '' }}" maxlength="20" placeholder="Введите ID заявки" autocomplete="off" />
+          <button type="submit">Найти заявку</button>
+        </form>
+        {% if find_id %}
+          {% if found_id %}
+            <div class="find-note ok">Заявка {{ find_id }} поднята на первое место.</div>
+          {% else %}
+            <div class="find-note bad">Заявка {{ find_id }} не найдена. Проверьте ID.</div>
+          {% endif %}
+        {% else %}
+          <div class="find-note">ID виден в правом верхнем углу каждой карточки.</div>
+        {% endif %}
+      </div>
     </div>
 
     {% with messages = get_flashed_messages() %}
@@ -140,7 +166,7 @@
       {% if submissions and submissions|length %}
         <div class="cards">
           {% for s in submissions %}
-            <div id="card-{{ s.id }}" class="card-item" role="button" tabindex="0" aria-expanded="false">
+            <div id="card-{{ s.id }}" class="card-item{% if s.highlighted %} highlighted open{% endif %}" role="button" tabindex="0" aria-expanded="{% if s.highlighted %}true{% else %}false{% endif %}">
               <div class="meta2">
                 <div class="row1">
                   {% if s.price_tenge %}<div class="price">{{ s.price_tenge|format_price }}{% if s.price_tenge|is_numeric %} ₸{% endif %}</div>{% endif %}
@@ -257,6 +283,11 @@
     if (hashCard && hashCard.classList.contains('card-item')) {
       hashCard.classList.add('open');
       hashCard.setAttribute('aria-expanded', 'true');
+    } else {
+      const highlightedCard = document.querySelector('.card-item.highlighted');
+      if (highlightedCard) {
+        highlightedCard.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
     }
 
     document.querySelectorAll('.card-item').forEach(card => {

@@ -644,8 +644,12 @@ def _thumb_url(sid: str, kind: str, photos: list[str]) -> str:
     return "/static/logo.jpeg"
 
 
-def _load_submissions(limit: int = 200) -> list[dict]:
-    """Newer-first list for public page."""
+def _load_submissions(limit: int = 200, highlight_id: str = "") -> list[dict]:
+    """Newer-first list for public page.
+
+    If highlight_id is provided and exists, move that card to the first position
+    while keeping the rest of the list in normal newest-first order.
+    """
     if not SUBMISSIONS_CSV.exists():
         return []
 
@@ -683,6 +687,13 @@ def _load_submissions(limit: int = 200) -> list[dict]:
 
     # newest first: created_utc is ISO, so lexicographic sort works
     items.sort(key=lambda x: x.get("created_utc", ""), reverse=True)
+
+    highlight = (highlight_id or "").strip().upper()
+    if highlight:
+        exact = [x for x in items if (x.get("id") or "").strip().upper() == highlight]
+        rest = [x for x in items if (x.get("id") or "").strip().upper() != highlight]
+        items = exact + rest
+
     return items[:limit]
 
 
@@ -692,11 +703,22 @@ def _load_submissions(limit: int = 200) -> list[dict]:
 
 @app.get("/")
 def index():
-    submissions = _load_submissions(limit=int(os.environ.get("MAX_LISTINGS", "200")))
+    find_id = (request.args.get("find_id") or "").strip().upper()
+    submissions = _load_submissions(
+        limit=int(os.environ.get("MAX_LISTINGS", "200")),
+        highlight_id=find_id,
+    )
 
     unlocked = set(session.get("unlocked_cards", []) or [])
+    found_id = False
     for s in submissions:
         sid = s.get("id")
+        if find_id and sid and sid.upper() == find_id:
+            found_id = True
+            s["highlighted"] = True
+        else:
+            s["highlighted"] = False
+
         s["unlocked"] = bool(sid and sid in unlocked)
 
         # Если карточка защищена паролем и ещё не разблокирована —
@@ -704,7 +726,13 @@ def index():
         if (s.get("password") or "").strip() and not s["unlocked"]:
             s["thumb_url"] = "/static/locked_thumb.svg"
 
-    return render_template("index.html", submissions=submissions, agent_profile=_read_agent_profile())
+    return render_template(
+        "index.html",
+        submissions=submissions,
+        agent_profile=_read_agent_profile(),
+        find_id=find_id,
+        found_id=found_id,
+    )
 
 
 @app.post("/submit")
